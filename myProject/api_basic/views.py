@@ -159,9 +159,12 @@ class GenericAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.Crea
     def delete(self, request, id):
         return self.destroy(request,id)
 
+
+"""The ViewSets """
+
 class ArticleViewSet(viewsets.ViewSet):
     lookup_field = 'id'
-    
+
     def list(self, request):
         articles = Article.objects.all()
         serializer = ArticleSerializer(articles, many=True)
@@ -190,3 +193,9 @@ class ArticleViewSet(viewsets.ViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ArticleViewSet(viewsets.GenericViewSet,mixins.ListModelMixin, mixins.CreateModelMixin,mixins.RetrieveModelMixin,mixins.UpdateModelMixin, mixins.DestroyModelMixin):
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+    lookup_filed = 'id'
