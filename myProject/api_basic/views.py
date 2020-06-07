@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from rest_framework.parsers import JSONParser
 from .models import Article
@@ -11,6 +11,9 @@ from rest_framework.views import APIView
 from rest_framework import generics, mixins
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets
+
+
 
 # Create your views here.
 
@@ -155,4 +158,35 @@ class GenericAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.Crea
         
     def delete(self, request, id):
         return self.destroy(request,id)
+
+class ArticleViewSet(viewsets.ViewSet):
+    lookup_field = 'id'
     
+    def list(self, request):
+        articles = Article.objects.all()
+        serializer = ArticleSerializer(articles, many=True)
+        return Response(serializer.data)
+    
+    def create(self, request):
+        serializer = ArticleSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def retrieve(self, request, id=None):
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset, id=id)
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+
+    def update(self, request, id=None):
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset, id=id)
+        serializer = ArticleSerializer(article ,data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
